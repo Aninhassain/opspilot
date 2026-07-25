@@ -123,7 +123,9 @@ export function generateSimulatedResponse(type: 'summarize' | 'email', input: st
         "Set up performance tracking dashboard"
       ],
       keywords: ["operations", "AI", "workflow", "efficiency", "collaboration", "metrics"],
-      estimatedReadingTime: Math.ceil(input.split(/\s+/).length / 200)
+      estimatedReadingTime: Math.ceil(input.split(/\s+/).length / 200),
+      tone: "Professional",
+      language: "English"
     }
   } else {
     return {

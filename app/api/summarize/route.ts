@@ -22,6 +22,8 @@ Analyze the following text and provide:
 3. 2-3 action items
 4. 5-7 relevant keywords
 5. Estimated reading time in minutes
+6. Tone of the document (e.g., Professional, Casual, Formal, Friendly, Urgent)
+7. Language of the document (e.g., English, Spanish, French, German)
 
 Format your response as JSON with this structure:
 {
@@ -29,7 +31,9 @@ Format your response as JSON with this structure:
   "keyPoints": ["string"],
   "actionItems": ["string"],
   "keywords": ["string"],
-  "estimatedReadingTime": number
+  "estimatedReadingTime": number,
+  "tone": "string",
+  "language": "string"
 }
 
 Text to analyze:

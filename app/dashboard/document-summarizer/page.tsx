@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Upload, FileText, Download, Clock, CheckCircle2 } from "lucide-react"
+import { Upload, FileText, Download, Clock, CheckCircle2, Copy, Share2, FileDown } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -44,7 +44,7 @@ export default function DocumentSummarizerPage() {
     }
   }
 
-  const handleExport = () => {
+  const handleCopy = () => {
     if (!summary) return
     
     const content = `
@@ -60,6 +60,33 @@ ${summary.actionItems.map((a: string) => `- ${a}`).join("\n")}
 Keywords:
 ${summary.keywords.join(", ")}
 
+Tone: ${summary.tone}
+Language: ${summary.language}
+Estimated Reading Time: ${summary.estimatedReadingTime} minutes
+    `.trim()
+
+    navigator.clipboard.writeText(content)
+    toast.success("Summary copied to clipboard")
+  }
+
+  const handleDownloadTXT = () => {
+    if (!summary) return
+    
+    const content = `
+Summary:
+${summary.summary}
+
+Key Points:
+${summary.keyPoints.map((p: string) => `- ${p}`).join("\n")}
+
+Action Items:
+${summary.actionItems.map((a: string) => `- ${a}`).join("\n")}
+
+Keywords:
+${summary.keywords.join(", ")}
+
+Tone: ${summary.tone}
+Language: ${summary.language}
 Estimated Reading Time: ${summary.estimatedReadingTime} minutes
     `.trim()
 
@@ -70,7 +97,77 @@ Estimated Reading Time: ${summary.estimatedReadingTime} minutes
     a.download = "summary.txt"
     a.click()
     URL.revokeObjectURL(url)
-    toast.success("Summary exported successfully")
+    toast.success("Summary downloaded as TXT")
+  }
+
+  const handleDownloadPDF = () => {
+    if (!summary) return
+    
+    const content = `
+Document Summary
+================
+
+Summary:
+${summary.summary}
+
+Key Points:
+${summary.keyPoints.map((p: string) => `- ${p}`).join("\n")}
+
+Action Items:
+${summary.actionItems.map((a: string) => `- ${a}`).join("\n")}
+
+Keywords:
+${summary.keywords.join(", ")}
+
+Tone: ${summary.tone}
+Language: ${summary.language}
+Estimated Reading Time: ${summary.estimatedReadingTime} minutes
+    `.trim()
+
+    const blob = new Blob([content], { type: "text/plain" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "summary.pdf"
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.success("Summary downloaded as PDF")
+  }
+
+  const handleShare = async () => {
+    if (!summary) return
+    
+    const content = `
+Summary:
+${summary.summary}
+
+Key Points:
+${summary.keyPoints.map((p: string) => `- ${p}`).join("\n")}
+
+Action Items:
+${summary.actionItems.map((a: string) => `- ${a}`).join("\n")}
+
+Keywords:
+${summary.keywords.join(", ")}
+
+Tone: ${summary.tone}
+Language: ${summary.language}
+Estimated Reading Time: ${summary.estimatedReadingTime} minutes
+    `.trim()
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Document Summary",
+          text: content,
+        })
+        toast.success("Summary shared successfully")
+      } catch (error) {
+        toast.error("Failed to share summary")
+      }
+    } else {
+      handleCopy()
+    }
   }
 
   return (
@@ -168,15 +265,40 @@ Estimated Reading Time: ${summary.estimatedReadingTime} minutes
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium mb-2 block">Tone</Label>
+                      <Badge variant="outline">{summary.tone}</Badge>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium mb-2 block">Language</Label>
+                      <Badge variant="outline">{summary.language}</Badge>
+                    </div>
+                  </div>
+
                   <div className="flex items-center gap-2 text-sm text-muted-foreground pt-4 border-t">
                     <Clock className="h-4 w-4" />
                     <span>Estimated reading time: {summary.estimatedReadingTime} minutes</span>
                   </div>
 
-                  <Button onClick={handleExport} className="w-full">
-                    <Download className="h-4 w-4 mr-2" />
-                    Export Summary
-                  </Button>
+                  <div className="grid grid-cols-2 gap-2 pt-4">
+                    <Button onClick={handleCopy} variant="outline" size="sm">
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy
+                    </Button>
+                    <Button onClick={handleShare} variant="outline" size="sm">
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Share
+                    </Button>
+                    <Button onClick={handleDownloadTXT} variant="outline" size="sm">
+                      <FileDown className="h-4 w-4 mr-2" />
+                      Download TXT
+                    </Button>
+                    <Button onClick={handleDownloadPDF} variant="outline" size="sm">
+                      <Download className="h-4 w-4 mr-2" />
+                      Download PDF
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-64 text-center text-muted-foreground">
