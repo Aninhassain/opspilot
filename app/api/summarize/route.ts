@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import { getGeminiService } from "@/services/gemini"
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,17 +12,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const apiKey = process.env.GEMINI_API_KEY
-    
-    if (!apiKey) {
-      return NextResponse.json(
-        { success: false, error: "Gemini API key not configured" },
-        { status: 500 }
-      )
-    }
-
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" })
+    const gemini = getGeminiService()
 
     const prompt = `
 Analyze the following text and provide:
@@ -45,18 +35,8 @@ Text to analyze:
 ${text}
 `
 
-    const result = await model.generateContent(prompt)
-    const response = await result.response
-    const responseText = response.text()
-
-    // Parse the JSON response
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/)
-    
-    if (!jsonMatch) {
-      throw new Error("Failed to parse AI response")
-    }
-
-    const analysis = JSON.parse(jsonMatch[0])
+    const responseText = await gemini.generateContent(prompt)
+    const analysis = gemini.parseJSONResponse(responseText)
 
     return NextResponse.json({
       success: true,
