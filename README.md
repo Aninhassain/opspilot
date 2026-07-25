@@ -136,14 +136,76 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## 🚀 Deployment
 
-### Vercel
+### Vercel via CI/CD Pipeline
 
-The easiest way to deploy is using [Vercel](https://vercel.com):
+This project uses GitHub Actions for automatic deployment to Vercel.
 
-1. Push your code to GitHub
-2. Import the project in Vercel
-3. Add environment variables
-4. Deploy
+#### Step 1: Get Vercel Credentials
+
+**A. Create Vercel Account:**
+1. Go to https://vercel.com/signup
+2. Sign up with your GitHub account
+
+**B. Get Vercel Token:**
+1. Go to https://vercel.com/account/tokens
+2. Click "Create Token"
+3. Name it "GitHub Actions"
+4. Copy the token (save it securely)
+
+**C. Import Project to Vercel:**
+1. Go to https://vercel.com/dashboard
+2. Click "Add New Project"
+3. Import your GitHub repo: `Aninhassain/opspilot`
+4. Configure build settings (Next.js auto-detected)
+5. Click "Deploy"
+
+**D. Get Project ID:**
+1. After deployment, go to Project Settings
+2. Copy the Project ID from the General tab
+
+**E. Get Organization ID:**
+1. In Vercel dashboard, go to Settings
+2. Copy your Organization ID from the URL or settings
+
+#### Step 2: Add GitHub Secrets
+
+1. Go to your GitHub repo: https://github.com/Aninhassain/opspilot
+2. Click **Settings** → **Secrets and variables** → **Actions**
+3. Add these secrets:
+   - `VERCEL_TOKEN`: Your Vercel token from Step 1B
+   - `VERCEL_ORG_ID`: Your organization ID from Step 1E
+   - `VERCEL_PROJECT_ID`: Your project ID from Step 1D
+
+#### Step 3: Add Environment Variables to Vercel
+
+1. In your Vercel project, go to Settings → Environment Variables
+2. Add:
+   - `GEMINI_API_KEY`: Your Google Gemini API key
+   - `NEXT_PUBLIC_APP_URL`: Your production URL (e.g., https://your-app.vercel.app)
+
+#### Step 4: Deploy
+
+Push to the main branch to trigger automatic deployment:
+
+```bash
+git add .
+git commit -m "Update for deployment"
+git push origin main
+```
+
+The GitHub Actions workflow will:
+- Run linting and type checking
+- Build the project
+- Automatically deploy to Vercel production
+
+### Manual Vercel Deployment
+
+If you prefer manual deployment:
+
+1. Push code to GitHub
+2. Go to Vercel dashboard
+3. Click "Deploy" on your project
+4. Vercel will automatically deploy the latest commit
 
 ### Manual Deployment
 

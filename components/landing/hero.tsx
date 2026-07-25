@@ -42,6 +42,21 @@ export function Hero() {
           </Link>
         </div>
 
+        <div className="flex flex-col sm:flex-row gap-4 pt-4">
+          <Link href="/dashboard/email-analyzer">
+            <Button size="lg" variant="secondary" className="gap-2">
+              Try Email Analyzer
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
+          <Link href="/dashboard/document-summarizer">
+            <Button size="lg" variant="secondary" className="gap-2">
+              Try Document Summarizer
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+
         <div className="pt-8 grid grid-cols-3 gap-8 md:gap-16 text-center">
           <div>
             <div className="text-3xl font-bold">10K+</div>
