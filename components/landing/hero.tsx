@@ -4,15 +4,17 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
+import { DogScene } from "@/components/3d/dog-scene"
 
 export function Hero() {
   return (
-    <section className="container py-24 md:py-32 lg:py-40">
+    <section className="container py-24 md:py-32 lg:py-40 relative overflow-hidden">
+      <DogScene />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex flex-col items-center text-center space-y-8"
+        className="flex flex-col items-center text-center space-y-8 relative z-10"
       >
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
           <Sparkles className="h-4 w-4" />
