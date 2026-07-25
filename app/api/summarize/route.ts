@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getGeminiService } from "@/services/gemini"
+import { getGeminiService, generateSimulatedResponse } from "@/services/gemini"
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,9 +12,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const gemini = getGeminiService()
+    try {
+      const gemini = getGeminiService()
 
-    const prompt = `
+      const prompt = `
 Analyze the following text and provide:
 1. A concise summary (2-3 sentences)
 2. 3-5 key points
@@ -35,13 +36,25 @@ Text to analyze:
 ${text}
 `
 
-    const responseText = await gemini.generateContent(prompt)
-    const analysis = gemini.parseJSONResponse(responseText)
+      const responseText = await gemini.generateContent(prompt)
+      const analysis = gemini.parseJSONResponse(responseText)
 
-    return NextResponse.json({
-      success: true,
-      data: analysis,
-    })
+      return NextResponse.json({
+        success: true,
+        data: analysis,
+      })
+    } catch (apiError) {
+      console.warn("Gemini API failed, using simulated response:", apiError instanceof Error ? apiError.message : apiError)
+      
+      // Fallback to simulated response for demo purposes
+      const simulatedData = generateSimulatedResponse('summarize', text)
+      
+      return NextResponse.json({
+        success: true,
+        data: simulatedData,
+        usingFallback: true,
+      })
+    }
   } catch (error) {
     console.error("Summarize API error:", error)
     return NextResponse.json(
