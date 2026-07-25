@@ -13,7 +13,15 @@ import { toast } from "sonner"
 export default function DocumentSummarizerPage() {
   const [text, setText] = useState("")
   const [loading, setLoading] = useState(false)
-  const [summary, setSummary] = useState<any>(null)
+  const [summary, setSummary] = useState<{
+    summary: string
+    keyPoints: string[]
+    actionItems: string[]
+    keywords: string[]
+    estimatedReadingTime: number
+    tone: string
+    language: string
+  } | null>(null)
 
   const handleSummarize = async () => {
     if (!text.trim()) {
@@ -37,7 +45,7 @@ export default function DocumentSummarizerPage() {
       } else {
         toast.error(data.error || "Failed to summarize document")
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred while summarizing")
     } finally {
       setLoading(false)
@@ -162,7 +170,7 @@ Estimated Reading Time: ${summary.estimatedReadingTime} minutes
           text: content,
         })
         toast.success("Summary shared successfully")
-      } catch (error) {
+      } catch {
         toast.error("Failed to share summary")
       }
     } else {

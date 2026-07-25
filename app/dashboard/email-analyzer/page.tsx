@@ -13,7 +13,17 @@ import { toast } from "sonner"
 export default function EmailAnalyzerPage() {
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
-  const [analysis, setAnalysis] = useState<any>(null)
+  const [analysis, setAnalysis] = useState<{
+    category: string
+    priority: string
+    sentiment: string
+    suggestedReply: string
+    spamDetection: {
+      isSpam: boolean
+      confidence: number
+    }
+    actionItems: string[]
+  } | null>(null)
 
   const handleAnalyze = async () => {
     if (!email.trim()) {
@@ -37,7 +47,7 @@ export default function EmailAnalyzerPage() {
       } else {
         toast.error(data.error || "Failed to analyze email")
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred while analyzing")
     } finally {
       setLoading(false)

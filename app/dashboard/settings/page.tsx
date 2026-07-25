@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { User, Bell, Key, Moon, Sun, Monitor, Save, LogOut } from "lucide-react"
 import { useTheme } from "next-themes"

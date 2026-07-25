@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select } from "@/components/ui/select"
-import { Search, Filter, FileText, Calendar, Eye, Download } from "lucide-react"
+import { Search, FileText, Calendar, Eye, Download } from "lucide-react"
 import { useState } from "react"
 
 const mockDocuments = [

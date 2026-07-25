@@ -13,7 +13,7 @@ function Dog() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [scrollY, setScrollY] = useState(0)
 
-  useThree(({ camera, scene, gl }) => {
+  useThree(({ camera, gl }) => {
     camera.position.z = 0.55
     gl.toneMapping = THREE.ReinhardToneMapping
     gl.outputColorSpace = THREE.SRGBColorSpace
