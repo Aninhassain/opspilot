@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth/lib/options"
 import connectDB from "@/lib/mongodb"
-import EmailAnalysis from "@/models/EmailAnalysis"
+import DocumentAnalysis from "@/models/DocumentAnalysis"
 import User from "@/models/User"
-import { emailSchema } from "@/lib/validations/email"
+import { documentSchema } from "@/lib/validations/document"
 import { guestStorage } from "@/lib/guest-storage"
 import { getGeminiService, generateSimulatedResponse } from "@/services/gemini"
 
@@ -11,34 +11,33 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth()
     const body = await request.json()
-    const validatedData = emailSchema.parse(body)
+    const validatedData = documentSchema.parse(body)
 
     const gemini = getGeminiService()
 
     const prompt = `
-Analyze the following email and provide:
-1. Category (Work, Personal, Promotional, Spam, Urgent, Newsletter)
-2. Priority (Low, Medium, High, Critical)
-3. Sentiment (Positive, Neutral, Negative)
-4. A suggested reply (professional and appropriate)
-5. Spam detection (isSpam: boolean, confidence: number 0-100)
-6. 2-3 action items if applicable
+Analyze the following text and provide:
+1. A concise summary (2-3 sentences)
+2. 3-5 key points
+3. 2-3 action items
+4. 5-7 relevant keywords
+5. Estimated reading time in minutes
+6. Tone of the document (e.g., Professional, Casual, Formal, Friendly, Urgent)
+7. Language of the document (e.g., English, Spanish, French, German)
 
 Format your response as JSON with this structure:
 {
-  "category": "string",
-  "priority": "string",
-  "sentiment": "string",
-  "suggestedReply": "string",
-  "spamDetection": {
-    "isSpam": boolean,
-    "confidence": number
-  },
-  "actionItems": ["string"]
+  "summary": "string",
+  "keyPoints": ["string"],
+  "actionItems": ["string"],
+  "keywords": ["string"],
+  "estimatedReadingTime": number,
+  "tone": "string",
+  "language": "string"
 }
 
-Email to analyze:
-${validatedData.email}
+Text to analyze:
+${validatedData.text}
 `
 
     const responseText = await gemini.generateContent(prompt)
@@ -59,55 +58,55 @@ ${validatedData.email}
         })
       }
 
-      const emailAnalysis = await EmailAnalysis.create({
+      const documentAnalysis = await DocumentAnalysis.create({
         userId: session.user.id,
-        subject: validatedData.subject,
-        emailContent: validatedData.email,
-        category: analysis.category,
-        priority: analysis.priority,
-        sentiment: analysis.sentiment,
-        suggestedReply: analysis.suggestedReply,
-        spamProbability: analysis.spamDetection.confidence,
-        isSpam: analysis.spamDetection.isSpam,
+        fileName: validatedData.fileName,
+        originalText: validatedData.text,
+        summary: analysis.summary,
+        keyPoints: analysis.keyPoints,
         actionItems: analysis.actionItems,
+        keywords: analysis.keywords,
+        readingTime: analysis.estimatedReadingTime,
+        tone: analysis.tone,
+        language: analysis.language,
       })
 
       return NextResponse.json({
         success: true,
         data: {
           ...analysis,
-          id: emailAnalysis._id.toString(),
+          id: documentAnalysis._id.toString(),
         },
       })
     } else {
       // Save to localStorage for guest users
-      const guestEmail = guestStorage.addEmail({
-        subject: validatedData.subject,
-        emailContent: validatedData.email,
-        category: analysis.category,
-        priority: analysis.priority,
-        sentiment: analysis.sentiment,
-        suggestedReply: analysis.suggestedReply,
-        spamProbability: analysis.spamDetection.confidence,
-        isSpam: analysis.spamDetection.isSpam,
+      const guestDoc = guestStorage.addDocument({
+        fileName: validatedData.fileName,
+        originalText: validatedData.text,
+        summary: analysis.summary,
+        keyPoints: analysis.keyPoints,
         actionItems: analysis.actionItems,
+        keywords: analysis.keywords,
+        readingTime: analysis.estimatedReadingTime,
+        tone: analysis.tone,
+        language: analysis.language,
       })
 
       return NextResponse.json({
         success: true,
         data: {
           ...analysis,
-          id: guestEmail.id,
+          id: guestDoc.id,
           isGuest: true,
         },
       })
     }
   } catch (error) {
-    console.error("Email API error:", error)
+    console.error("Document API error:", error)
 
     // Fallback to simulated response
     const body = await request.json()
-    const simulatedData = generateSimulatedResponse("email", body.email)
+    const simulatedData = generateSimulatedResponse("summarize", body.text)
 
     return NextResponse.json({
       success: true,

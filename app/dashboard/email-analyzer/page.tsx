@@ -133,7 +133,7 @@ export default function EmailAnalyzerPage() {
                     </div>
                     <div className="space-y-2">
                       <Label className="text-sm font-medium">Priority</Label>
-                      <Badge variant={getPriorityColor(analysis.priority) as any} className="text-base px-3 py-1">
+                      <Badge variant={getPriorityColor(analysis.priority) as "default" | "destructive" | "secondary" | "outline"} className="text-base px-3 py-1">
                         {analysis.priority}
                       </Badge>
                     </div>
@@ -142,7 +142,7 @@ export default function EmailAnalyzerPage() {
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">Sentiment</Label>
                     <div className="flex items-center gap-2">
-                      <Badge variant={getSentimentColor(analysis.sentiment) as any} className="text-base px-3 py-1">
+                      <Badge variant={getSentimentColor(analysis.sentiment) as "default" | "destructive" | "secondary" | "outline"} className="text-base px-3 py-1">
                         {analysis.sentiment}
                       </Badge>
                       <TrendingUp className="h-4 w-4 text-muted-foreground" />

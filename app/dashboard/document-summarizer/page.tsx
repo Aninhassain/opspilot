@@ -31,7 +31,7 @@ export default function DocumentSummarizerPage() {
 
     setLoading(true)
     try {
-      const response = await fetch("/api/summarize", {
+      const response = await fetch("/api/document", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),

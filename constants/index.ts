@@ -23,9 +23,19 @@ export const NAVIGATION_ITEMS = [
     icon: "Search",
   },
   {
+    title: "History",
+    href: "/dashboard/history",
+    icon: "History",
+  },
+  {
     title: "Reports",
     href: "/dashboard/reports",
     icon: "BarChart3",
+  },
+  {
+    title: "Profile",
+    href: "/dashboard/profile",
+    icon: "User",
   },
   {
     title: "Settings",

@@ -10,10 +10,14 @@ A modern enterprise SaaS application that helps businesses automate document pro
 
 ## 🚀 Features
 
-- **AI Document Summarizer**: Automatically summarize long documents with key points, action items, and keywords
-- **Email Analyzer**: Classify emails, detect sentiment, generate suggested replies, and spam detection
+- **AI Document Summarizer**: Automatically summarize long documents with key points, action items, keywords, tone detection, language detection, reading time, copy/download/share features
+- **Email Analyzer**: Classify emails, detect sentiment, generate suggested replies, spam detection, and action items extraction
 - **Document Search**: Search and filter through uploaded documents with intelligent sorting
 - **Analytics Dashboard**: Track productivity metrics, AI usage, and response times with beautiful charts
+- **History & Favorites**: View and manage your analysis history with search, filter, sort, delete, and favorite functionality
+- **User Profile**: View account details, statistics, and manage your profile
+- **Guest Mode**: Try all features instantly without creating an account (data stored locally)
+- **Authentication**: Sign in with Google for persistent data storage and cross-device sync
 - **Settings Management**: Customize themes, notifications, and API configuration
 - **Modern UI**: Glassmorphism design with dark mode support, smooth animations, and responsive layout
 
@@ -49,6 +53,9 @@ opspilot/
 - **Styling**: Tailwind CSS 4
 - **UI Components**: shadcn/ui patterns
 - **State Management**: Zustand
+- **Authentication**: NextAuth.js (Google OAuth)
+- **Database**: MongoDB Atlas with Mongoose
+- **Validation**: Zod
 - **Animations**: Framer Motion
 - **Charts**: Recharts
 - **Forms**: React Hook Form + Zod
@@ -76,9 +83,15 @@ npm install
 cp .env.example .env.local
 ```
 
-4. Add your Gemini API key to `.env.local`:
+4. Add your environment variables to `.env.local`:
 ```env
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/opspilot?retryWrites=true&w=majority
+NEXTAUTH_SECRET=your_nextauth_secret_here
+AUTH_GOOGLE_ID=your_google_client_id
+AUTH_GOOGLE_SECRET=your_google_client_secret
 GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-2.5-flash
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
 ## 🚀 Getting Started
@@ -95,7 +108,12 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 | Variable | Description | Required |
 |----------|-------------|----------|
+| `MONGODB_URI` | MongoDB Atlas connection string | Yes (for authenticated mode) |
+| `NEXTAUTH_SECRET` | Secret for NextAuth.js session encryption | Yes (for authentication) |
+| `AUTH_GOOGLE_ID` | Google OAuth client ID | Yes (for authentication) |
+| `AUTH_GOOGLE_SECRET` | Google OAuth client secret | Yes (for authentication) |
 | `GEMINI_API_KEY` | Google Gemini API key for AI features | Yes |
+| `GEMINI_MODEL` | Custom Gemini model name | No (defaults to gemini-2.5-flash) |
 | `NEXT_PUBLIC_APP_URL` | Application URL for production | No |
 
 ## 🔧 Available Scripts
@@ -121,11 +139,37 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ### Dashboard
 - **Overview**: Statistics cards, recent activities, productivity metrics
-- **Document Summarizer**: Upload/paste text for AI summarization
+- **Document Summarizer**: Upload/paste text for AI summarization with enhanced features
 - **Email Analyzer**: Paste emails for classification and sentiment analysis
 - **Document Search**: Search and filter uploaded documents
+- **History**: View and manage analysis history (documents & emails)
+- **Profile**: View account details, statistics, and manage profile
 - **Reports**: Analytics charts and metrics
 - **Settings**: Profile, theme, notifications, API configuration
+
+## 🔐 Authentication & Guest Mode
+
+### Guest Mode
+- **No account required**: Try all AI features instantly
+- **Local storage**: Data stored in browser localStorage
+- **Full access**: Document Summarizer, Email Analyzer, Dashboard, Reports
+- **Limitations**: No persistent history, no cross-device sync, no favorites
+
+### Authenticated Mode
+- **Google OAuth**: Sign in with Google account
+- **MongoDB storage**: Persistent data storage in MongoDB Atlas
+- **Cross-device sync**: Access your data from any device
+- **Full features**: History, favorites, profile, settings
+- **Automatic user creation**: Users created automatically on first sign-in
+
+### Protected Routes
+The following routes require authentication:
+- `/dashboard/profile`
+- `/dashboard/history`
+- `/dashboard/favorites`
+- `/dashboard/settings`
+
+All other routes (including AI features) work in both guest and authenticated modes.
 
 ## 🔐 Security
 
@@ -180,7 +224,12 @@ This project uses GitHub Actions for automatic deployment to Vercel.
 
 1. In your Vercel project, go to Settings → Environment Variables
 2. Add:
+   - `MONGODB_URI`: Your MongoDB Atlas connection string
+   - `NEXTAUTH_SECRET`: Generate a random secret (use: `openssl rand -base64 32`)
+   - `AUTH_GOOGLE_ID`: Your Google OAuth client ID
+   - `AUTH_GOOGLE_SECRET`: Your Google OAuth client secret
    - `GEMINI_API_KEY`: Your Google Gemini API key
+   - `GEMINI_MODEL`: `gemini-2.5-flash` (or your preferred model)
    - `NEXT_PUBLIC_APP_URL`: Your production URL (e.g., https://your-app.vercel.app)
 
 #### Step 4: Deploy
@@ -232,13 +281,14 @@ Required GitHub Secrets:
 
 ## 📝 API Routes
 
-### POST `/api/summarize`
-Summarizes text using Gemini AI.
+### POST `/api/document`
+Summarizes text using Gemini AI and saves to MongoDB (authenticated) or localStorage (guest).
 
 **Request:**
 ```json
 {
-  "text": "Your document text here..."
+  "text": "Your document text here...",
+  "fileName": "document.txt" (optional)
 }
 ```
 
@@ -251,18 +301,23 @@ Summarizes text using Gemini AI.
     "keyPoints": ["Point 1", "Point 2"],
     "actionItems": ["Action 1"],
     "keywords": ["keyword1", "keyword2"],
-    "estimatedReadingTime": 5
+    "readingTime": 5,
+    "tone": "Professional",
+    "language": "English",
+    "id": "document_id",
+    "isGuest": true (for guest mode)
   }
 }
 ```
 
 ### POST `/api/email`
-Analyzes email content using Gemini AI.
+Analyzes email content using Gemini AI and saves to MongoDB (authenticated) or localStorage (guest).
 
 **Request:**
 ```json
 {
-  "email": "Your email content here..."
+  "email": "Your email content here...",
+  "subject": "Email subject" (optional)
 }
 ```
 
@@ -279,7 +334,80 @@ Analyzes email content using Gemini AI.
       "isSpam": false,
       "confidence": 95
     },
-    "actionItems": ["Action 1"]
+    "actionItems": ["Action 1"],
+    "id": "email_id",
+    "isGuest": true (for guest mode)
+  }
+}
+```
+
+### GET `/api/history`
+Fetches analysis history (documents and emails) with search, filter, and sort options.
+
+**Query Parameters:**
+- `type`: "document" | "email" | "all" (default: "all")
+- `search`: Search query string
+- `sortBy`: Field to sort by (default: "createdAt")
+- `sortOrder`: "asc" | "desc" (default: "desc")
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "documents": [...],
+    "emails": [...]
+  }
+}
+```
+
+### DELETE `/api/history`
+Deletes an analysis from history.
+
+**Query Parameters:**
+- `id`: Analysis ID
+- `type`: "document" | "email"
+
+### POST `/api/favorites`
+Adds an analysis to favorites.
+
+**Request:**
+```json
+{
+  "analysisId": "analysis_id",
+  "type": "document" | "email"
+}
+```
+
+### GET `/api/favorites`
+Fetches user's favorite analyses.
+
+### DELETE `/api/favorites`
+Removes an analysis from favorites.
+
+**Query Parameters:**
+- `analysisId`: Analysis ID
+
+### GET `/api/profile`
+Fetches user profile and statistics.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "user": {
+      "name": "John Doe",
+      "email": "john@example.com",
+      "image": "avatar_url",
+      "provider": "google",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    "stats": {
+      "documentsProcessed": 42,
+      "emailsAnalyzed": 156,
+      "favorites": 23
+    }
   }
 }
 ```
@@ -317,18 +445,75 @@ Contributions are welcome! Please follow these steps:
 
 This project is licensed under the MIT License.
 
+## �️ Database Schema
+
+### User Model
+```typescript
+{
+  name: string
+  email: string (unique)
+  image?: string
+  provider: "google" | "github" | "credentials"
+  createdAt: Date
+}
+```
+
+### DocumentAnalysis Model
+```typescript
+{
+  userId: string
+  fileName?: string
+  originalText: string
+  summary: string
+  keyPoints: string[]
+  actionItems: string[]
+  keywords: string[]
+  readingTime: number
+  tone: string
+  language: string
+  createdAt: Date
+}
+```
+
+### EmailAnalysis Model
+```typescript
+{
+  userId: string
+  subject?: string
+  emailContent: string
+  category: string
+  priority: string
+  sentiment: string
+  suggestedReply: string
+  spamProbability: number
+  isSpam: boolean
+  actionItems: string[]
+  createdAt: Date
+}
+```
+
+### Favorite Model
+```typescript
+{
+  userId: string
+  analysisId: string
+  type: "document" | "email"
+  createdAt: Date
+}
+```
+
 ## 🔮 Future Improvements
 
-- [ ] Real database integration (PostgreSQL/Supabase)
-- [ ] User authentication with NextAuth.js
 - [ ] File upload with drag and drop
 - [ ] Real-time notifications
 - [ ] Advanced analytics with time filters
-- [ ] Export to PDF/Word
 - [ ] Multi-language support
 - [ ] Mobile app (React Native)
 - [ ] API rate limiting
 - [ ] Advanced spam detection with ML
+- [ ] Team collaboration features
+- [ ] Export to PDF/Word
+- [ ] Email integration (Gmail, Outlook)
 
 ## 📞 Support
 

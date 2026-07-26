@@ -85,7 +85,7 @@ export default function DashboardPage() {
           <Card className="glass">
             <CardHeader>
               <CardTitle>Productivity Metrics</CardTitle>
-              <CardDescription>Your team's performance</CardDescription>
+              <CardDescription>Your team&apos;s performance</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">

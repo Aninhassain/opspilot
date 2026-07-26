@@ -34,7 +34,7 @@ export function Testimonials() {
                     <div className="text-sm text-muted-foreground">{testimonial.role}</div>
                   </div>
                 </div>
-                <p className="text-muted-foreground">"{testimonial.content}"</p>
+                <p className="text-muted-foreground">&ldquo;{testimonial.content}&rdquo;</p>
               </CardContent>
             </Card>
           </motion.div>

@@ -15,7 +15,6 @@ const SUPPORTED_MODELS = [
   "gemini-pro-latest",
 ] as const
 
-type SupportedModel = typeof SUPPORTED_MODELS[number]
 
 export class GeminiService {
   private apiKey: string
@@ -68,7 +67,7 @@ export class GeminiService {
   /**
    * Parse JSON from AI response
    */
-  parseJSONResponse(responseText: string): any {
+  parseJSONResponse(responseText: string): unknown {
     const jsonMatch = responseText.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
       throw new Error("Failed to parse JSON from AI response")
