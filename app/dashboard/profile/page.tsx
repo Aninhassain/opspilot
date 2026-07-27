@@ -12,7 +12,10 @@ import { useAuth } from "@clerk/nextjs"
 
 export default function ProfilePage() {
   const { isSignedIn } = useAuth()
-  const [profile, setProfile] = useState<{ user: { name: string; email: string; image: string; provider: string } } | null>(null)
+  const [profile, setProfile] = useState<{
+    user: { name: string; email: string; image: string; provider: string; createdAt: Date | string | null }
+    stats: { documentsProcessed: number; emailsAnalyzed: number; favorites: number }
+  } | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

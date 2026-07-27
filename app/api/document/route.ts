@@ -6,6 +6,7 @@ import User from "@/models/User"
 import { documentSchema } from "@/lib/validations/document"
 import { guestStorage } from "@/lib/guest-storage"
 import { getGeminiService, generateSimulatedResponse } from "@/services/gemini"
+import { isDocumentAnalysis } from "@/types/analysis"
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,6 +44,13 @@ ${validatedData.text}
     const responseText = await gemini.generateContent(prompt)
     const analysis = gemini.parseJSONResponse(responseText)
 
+    if (!isDocumentAnalysis(analysis)) {
+      throw new Error("Invalid analysis response from AI")
+    }
+
+    // Type assertion after validation
+    const validatedAnalysis: import("@/types/analysis").DocumentAnalysis = analysis
+
     if (session?.userId) {
       // Save to MongoDB for authenticated users
       await connectDB()
@@ -62,19 +70,19 @@ ${validatedData.text}
         userId: session.userId,
         fileName: validatedData.fileName,
         originalText: validatedData.text,
-        summary: analysis.summary,
-        keyPoints: analysis.keyPoints,
-        actionItems: analysis.actionItems,
-        keywords: analysis.keywords,
-        readingTime: analysis.estimatedReadingTime,
-        tone: analysis.tone,
-        language: analysis.language,
+        summary: validatedAnalysis.summary,
+        keyPoints: validatedAnalysis.keyPoints,
+        actionItems: validatedAnalysis.actionItems,
+        keywords: validatedAnalysis.keywords,
+        readingTime: validatedAnalysis.estimatedReadingTime,
+        tone: validatedAnalysis.tone,
+        language: validatedAnalysis.language,
       })
 
       return NextResponse.json({
         success: true,
         data: {
-          ...analysis,
+          ...validatedAnalysis,
           id: documentAnalysis._id.toString(),
         },
       })
@@ -83,19 +91,19 @@ ${validatedData.text}
       const guestDoc = guestStorage.addDocument({
         fileName: validatedData.fileName,
         originalText: validatedData.text,
-        summary: analysis.summary,
-        keyPoints: analysis.keyPoints,
-        actionItems: analysis.actionItems,
-        keywords: analysis.keywords,
-        readingTime: analysis.estimatedReadingTime,
-        tone: analysis.tone,
-        language: analysis.language,
+        summary: validatedAnalysis.summary,
+        keyPoints: validatedAnalysis.keyPoints,
+        actionItems: validatedAnalysis.actionItems,
+        keywords: validatedAnalysis.keywords,
+        readingTime: validatedAnalysis.estimatedReadingTime,
+        tone: validatedAnalysis.tone,
+        language: validatedAnalysis.language,
       })
 
       return NextResponse.json({
         success: true,
         data: {
-          ...analysis,
+          ...validatedAnalysis,
           id: guestDoc.id,
           isGuest: true,
         },

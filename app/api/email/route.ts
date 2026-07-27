@@ -6,6 +6,7 @@ import User from "@/models/User"
 import { emailSchema } from "@/lib/validations/email"
 import { guestStorage } from "@/lib/guest-storage"
 import { getGeminiService, generateSimulatedResponse } from "@/services/gemini"
+import { isEmailAnalysis } from "@/types/analysis"
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,6 +45,13 @@ ${validatedData.email}
     const responseText = await gemini.generateContent(prompt)
     const analysis = gemini.parseJSONResponse(responseText)
 
+    if (!isEmailAnalysis(analysis)) {
+      throw new Error("Invalid analysis response from AI")
+    }
+
+    // Type assertion after validation
+    const validatedAnalysis: import("@/types/analysis").EmailAnalysis = analysis
+
     if (session?.userId) {
       // Save to MongoDB for authenticated users
       await connectDB()
@@ -63,19 +71,19 @@ ${validatedData.email}
         userId: session.userId,
         subject: validatedData.subject,
         emailContent: validatedData.email,
-        category: analysis.category,
-        priority: analysis.priority,
-        sentiment: analysis.sentiment,
-        suggestedReply: analysis.suggestedReply,
-        spamProbability: analysis.spamDetection.confidence,
-        isSpam: analysis.spamDetection.isSpam,
-        actionItems: analysis.actionItems,
+        category: validatedAnalysis.category,
+        priority: validatedAnalysis.priority,
+        sentiment: validatedAnalysis.sentiment,
+        suggestedReply: validatedAnalysis.suggestedReply,
+        spamProbability: validatedAnalysis.spamDetection.confidence,
+        isSpam: validatedAnalysis.spamDetection.isSpam,
+        actionItems: validatedAnalysis.actionItems,
       })
 
       return NextResponse.json({
         success: true,
         data: {
-          ...analysis,
+          ...validatedAnalysis,
           id: emailAnalysis._id.toString(),
         },
       })
@@ -84,19 +92,19 @@ ${validatedData.email}
       const guestEmail = guestStorage.addEmail({
         subject: validatedData.subject,
         emailContent: validatedData.email,
-        category: analysis.category,
-        priority: analysis.priority,
-        sentiment: analysis.sentiment,
-        suggestedReply: analysis.suggestedReply,
-        spamProbability: analysis.spamDetection.confidence,
-        isSpam: analysis.spamDetection.isSpam,
-        actionItems: analysis.actionItems,
+        category: validatedAnalysis.category,
+        priority: validatedAnalysis.priority,
+        sentiment: validatedAnalysis.sentiment,
+        suggestedReply: validatedAnalysis.suggestedReply,
+        spamProbability: validatedAnalysis.spamDetection.confidence,
+        isSpam: validatedAnalysis.spamDetection.isSpam,
+        actionItems: validatedAnalysis.actionItems,
       })
 
       return NextResponse.json({
         success: true,
         data: {
-          ...analysis,
+          ...validatedAnalysis,
           id: guestEmail.id,
           isGuest: true,
         },

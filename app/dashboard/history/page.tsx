@@ -203,7 +203,11 @@ export default function HistoryPage() {
                           <Mail className="h-5 w-5 text-primary" />
                         )}
                         <h3 className="font-semibold">
-                          {item.fileName || item.subject || `${item.itemType} Analysis`}
+                          {item.itemType === "document" && "fileName" in item
+                            ? (item as HistoryDocument & { itemType: "document" }).fileName || "Document"
+                            : item.itemType === "email" && "subject" in item
+                            ? (item as HistoryEmail & { itemType: "email" }).subject || "Email"
+                            : `${item.itemType} Analysis`}
                         </h3>
                         <Badge variant="outline" className="text-xs">
                           {item.itemType}
@@ -211,7 +215,11 @@ export default function HistoryPage() {
                       </div>
 
                       <p className="text-sm text-muted-foreground line-clamp-2">
-                        {item.summary || item.category}
+                        {item.itemType === "document" && "summary" in item
+                          ? (item as HistoryDocument & { itemType: "document" }).summary
+                          : item.itemType === "email" && "category" in item
+                          ? (item as HistoryEmail & { itemType: "email" }).category
+                          : ""}
                       </p>
 
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -219,12 +227,12 @@ export default function HistoryPage() {
                           <Clock className="h-3 w-3" />
                           <span>{new Date(item.createdAt).toLocaleString()}</span>
                         </div>
-                        {item.itemType === "document" && item.readingTime && (
-                          <span>{item.readingTime} min read</span>
+                        {item.itemType === "document" && "readingTime" in item && (item as HistoryDocument & { itemType: "document" }).readingTime && (
+                          <span>{(item as HistoryDocument & { itemType: "document" }).readingTime} min read</span>
                         )}
-                        {item.itemType === "email" && item.priority && (
+                        {item.itemType === "email" && "priority" in item && (item as HistoryEmail & { itemType: "email" }).priority && (
                           <Badge variant="secondary" className="text-xs">
-                            {item.priority}
+                            {(item as HistoryEmail & { itemType: "email" }).priority}
                           </Badge>
                         )}
                       </div>
@@ -234,14 +242,14 @@ export default function HistoryPage() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => handleFavorite(item.id || item._id, item.itemType)}
+                        onClick={() => handleFavorite((item.id || item._id) as string, item.itemType)}
                       >
                         <Star className="h-4 w-4" />
                       </Button>
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => handleDelete(item.id || item._id, item.itemType)}
+                        onClick={() => handleDelete((item.id || item._id) as string, item.itemType)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

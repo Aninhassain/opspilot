@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import type { DocumentAnalysis, EmailAnalysis } from "@/types/analysis"
 
 // List of supported Gemini models in order of preference (based on user's API key access)
 const SUPPORTED_MODELS = [
@@ -67,12 +68,16 @@ export class GeminiService {
   /**
    * Parse JSON from AI response
    */
-  parseJSONResponse(responseText: string): unknown {
+  parseJSONResponse(responseText: string): Record<string, unknown> {
     const jsonMatch = responseText.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
       throw new Error("Failed to parse JSON from AI response")
     }
-    return JSON.parse(jsonMatch[0])
+    const parsed = JSON.parse(jsonMatch[0])
+    if (typeof parsed !== 'object' || parsed === null) {
+      throw new Error("Parsed response is not an object")
+    }
+    return parsed as Record<string, unknown>
   }
 }
 
