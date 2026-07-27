@@ -1,5 +1,4 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import type { DocumentAnalysis, EmailAnalysis } from "@/types/analysis"
 
 // List of supported Gemini models in order of preference (based on user's API key access)
 const SUPPORTED_MODELS = [
