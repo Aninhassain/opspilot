@@ -1,17 +1,14 @@
-import { clerkMiddleware } from "@clerk/nextjs/server"
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server"
+
+const isProtectedRoute = createRouteMatcher([
+  '/dashboard/profile(.*)',
+  '/dashboard/history(.*)',
+  '/dashboard/favorites(.*)',
+  '/dashboard/settings(.*)',
+])
 
 export default clerkMiddleware((auth, req) => {
-  // Protect specific routes
-  if (req.nextUrl.pathname.startsWith('/dashboard/profile')) {
-    auth().protect()
-  }
-  if (req.nextUrl.pathname.startsWith('/dashboard/history')) {
-    auth().protect()
-  }
-  if (req.nextUrl.pathname.startsWith('/dashboard/favorites')) {
-    auth().protect()
-  }
-  if (req.nextUrl.pathname.startsWith('/dashboard/settings')) {
+  if (isProtectedRoute(req)) {
     auth().protect()
   }
 })

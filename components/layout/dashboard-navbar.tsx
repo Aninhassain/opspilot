@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, Search } from "lucide-react"
+import { Bell, Search, User, FileText, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { UserButton } from "@clerk/nextjs"
@@ -24,11 +24,11 @@ export function DashboardNavbar() {
             <Bell className="h-5 w-5" />
           </Button>
 
-          <UserButton afterSignOutUrl="/">
+          <UserButton>
             <UserButton.MenuItems>
-              <UserButton.Link href="/dashboard/profile">Profile</UserButton.Link>
-              <UserButton.Link href="/dashboard/history">History</UserButton.Link>
-              <UserButton.Link href="/dashboard/settings">Settings</UserButton.Link>
+              <UserButton.Link label="Profile" labelIcon={<User className="h-4 w-4" />} href="/dashboard/profile" />
+              <UserButton.Link label="History" labelIcon={<FileText className="h-4 w-4" />} href="/dashboard/history" />
+              <UserButton.Link label="Settings" labelIcon={<Settings className="h-4 w-4" />} href="/dashboard/settings" />
             </UserButton.MenuItems>
           </UserButton>
         </div>
