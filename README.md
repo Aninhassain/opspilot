@@ -17,7 +17,7 @@ A modern enterprise SaaS application that helps businesses automate document pro
 - **History & Favorites**: View and manage your analysis history with search, filter, sort, delete, and favorite functionality
 - **User Profile**: View account details, statistics, and manage your profile
 - **Guest Mode**: Try all features instantly without creating an account (data stored locally)
-- **Authentication**: Sign in with Google for persistent data storage and cross-device sync
+- **Authentication**: Sign in with Clerk for persistent data storage and cross-device sync
 - **Settings Management**: Customize themes, notifications, and API configuration
 - **Modern UI**: Glassmorphism design with dark mode support, smooth animations, and responsive layout
 
@@ -53,7 +53,7 @@ opspilot/
 - **Styling**: Tailwind CSS 4
 - **UI Components**: shadcn/ui patterns
 - **State Management**: Zustand
-- **Authentication**: NextAuth.js (Google OAuth)
+- **Authentication**: Clerk (Email/Password, OAuth)
 - **Database**: MongoDB Atlas with Mongoose
 - **Validation**: Zod
 - **Animations**: Framer Motion
@@ -86,9 +86,10 @@ cp .env.example .env.local
 4. Add your environment variables to `.env.local`:
 ```env
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/opspilot?retryWrites=true&w=majority
-NEXTAUTH_SECRET=your_nextauth_secret_here
-AUTH_GOOGLE_ID=your_google_client_id
-AUTH_GOOGLE_SECRET=your_google_client_secret
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/auth/login
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/auth/signup
 GEMINI_API_KEY=your_gemini_api_key_here
 GEMINI_MODEL=gemini-2.5-flash
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -109,9 +110,10 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `MONGODB_URI` | MongoDB Atlas connection string | Yes (for authenticated mode) |
-| `NEXTAUTH_SECRET` | Secret for NextAuth.js session encryption | Yes (for authentication) |
-| `AUTH_GOOGLE_ID` | Google OAuth client ID | Yes (for authentication) |
-| `AUTH_GOOGLE_SECRET` | Google OAuth client secret | Yes (for authentication) |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key for frontend | Yes (for authentication) |
+| `CLERK_SECRET_KEY` | Clerk secret key for backend | Yes (for authentication) |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Redirect URL for sign in | No (defaults to /auth/login) |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Redirect URL for sign up | No (defaults to /auth/signup) |
 | `GEMINI_API_KEY` | Google Gemini API key for AI features | Yes |
 | `GEMINI_MODEL` | Custom Gemini model name | No (defaults to gemini-2.5-flash) |
 | `NEXT_PUBLIC_APP_URL` | Application URL for production | No |
@@ -156,7 +158,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - **Limitations**: No persistent history, no cross-device sync, no favorites
 
 ### Authenticated Mode
-- **Google OAuth**: Sign in with Google account
+- **Clerk Authentication**: Sign in with email/password or OAuth providers
 - **MongoDB storage**: Persistent data storage in MongoDB Atlas
 - **Cross-device sync**: Access your data from any device
 - **Full features**: History, favorites, profile, settings
@@ -225,9 +227,10 @@ This project uses GitHub Actions for automatic deployment to Vercel.
 1. In your Vercel project, go to Settings → Environment Variables
 2. Add:
    - `MONGODB_URI`: Your MongoDB Atlas connection string
-   - `NEXTAUTH_SECRET`: Generate a random secret (use: `openssl rand -base64 32`)
-   - `AUTH_GOOGLE_ID`: Your Google OAuth client ID
-   - `AUTH_GOOGLE_SECRET`: Your Google OAuth client secret
+   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`: Your Clerk publishable key
+   - `CLERK_SECRET_KEY`: Your Clerk secret key
+   - `NEXT_PUBLIC_CLERK_SIGN_IN_URL`: `/auth/login`
+   - `NEXT_PUBLIC_CLERK_SIGN_UP_URL`: `/auth/signup`
    - `GEMINI_API_KEY`: Your Google Gemini API key
    - `GEMINI_MODEL`: `gemini-2.5-flash` (or your preferred model)
    - `NEXT_PUBLIC_APP_URL`: Your production URL (e.g., https://your-app.vercel.app)
@@ -453,7 +456,7 @@ This project is licensed under the MIT License.
   name: string
   email: string (unique)
   image?: string
-  provider: "google" | "github" | "credentials"
+  provider: "clerk"
   createdAt: Date
 }
 ```

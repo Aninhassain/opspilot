@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/auth/lib/options"
+import { auth } from "@clerk/nextjs/server"
 import connectDB from "@/lib/mongodb"
 import Favorite from "@/models/Favorite"
 import { guestStorage } from "@/lib/guest-storage"
@@ -14,10 +14,10 @@ export async function GET(request: NextRequest) {
   try {
     const session = await auth()
 
-    if (session?.user?.id) {
+    if (session?.userId) {
       // Fetch from MongoDB for authenticated users
       await connectDB()
-      const favorites = await Favorite.find({ userId: session.user.id })
+      const favorites = await Favorite.find({ userId: session.userId })
         .sort({ createdAt: -1 })
         .lean()
 
@@ -49,12 +49,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = favoriteSchema.parse(body)
 
-    if (session?.user?.id) {
+    if (session?.userId) {
       // Save to MongoDB for authenticated users
       await connectDB()
 
       const existingFavorite = await Favorite.findOne({
-        userId: session.user.id,
+        userId: session.userId,
         analysisId: validatedData.analysisId,
       })
 
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       }
 
       const favorite = await Favorite.create({
-        userId: session.user.id,
+        userId: session.userId,
         analysisId: validatedData.analysisId,
         type: validatedData.type,
       })
@@ -119,11 +119,11 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    if (session?.user?.id) {
+    if (session?.userId) {
       // Delete from MongoDB for authenticated users
       await connectDB()
       await Favorite.findOneAndDelete({
-        userId: session.user.id,
+        userId: session.userId,
         analysisId,
       })
     } else {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/auth/lib/options"
+import { auth } from "@clerk/nextjs/server"
 import connectDB from "@/lib/mongodb"
 import User from "@/models/User"
 import DocumentAnalysis from "@/models/DocumentAnalysis"
@@ -11,19 +11,19 @@ export async function GET(request: NextRequest) {
   try {
     const session = await auth()
 
-    if (session?.user?.id) {
+    if (session?.userId) {
       // Fetch from MongoDB for authenticated users
       await connectDB()
 
-      const user = await User.findById(session.user.id).lean()
+      const user = await User.findById(session.userId).lean()
       const documentCount = await DocumentAnalysis.countDocuments({
-        userId: session.user.id,
+        userId: session.userId,
       })
       const emailCount = await EmailAnalysis.countDocuments({
-        userId: session.user.id,
+        userId: session.userId,
       })
       const favoriteCount = await Favorite.countDocuments({
-        userId: session.user.id,
+        userId: session.userId,
       })
 
       return NextResponse.json({

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/auth/lib/options"
+import { auth } from "@clerk/nextjs/server"
 import connectDB from "@/lib/mongodb"
 import EmailAnalysis from "@/models/EmailAnalysis"
 import User from "@/models/User"
@@ -44,23 +44,23 @@ ${validatedData.email}
     const responseText = await gemini.generateContent(prompt)
     const analysis = gemini.parseJSONResponse(responseText)
 
-    if (session?.user?.id) {
+    if (session?.userId) {
       // Save to MongoDB for authenticated users
       await connectDB()
 
       // Ensure user exists
-      let user = await User.findById(session.user.id)
+      let user = await User.findById(session.userId)
       if (!user) {
         user = await User.create({
-          name: session.user.name || "User",
-          email: session.user.email || "",
-          image: session.user.image || undefined,
-          provider: "google",
+          name: session.firstName || "User",
+          email: session.emailAddresses?.[0]?.emailAddress || "",
+          image: session.imageUrl || undefined,
+          provider: "clerk",
         })
       }
 
       const emailAnalysis = await EmailAnalysis.create({
-        userId: session.user.id,
+        userId: session.userId,
         subject: validatedData.subject,
         emailContent: validatedData.email,
         category: analysis.category,

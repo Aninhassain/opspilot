@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/auth/lib/options"
+import { auth } from "@clerk/nextjs/server"
 import connectDB from "@/lib/mongodb"
 import DocumentAnalysis from "@/models/DocumentAnalysis"
 import EmailAnalysis from "@/models/EmailAnalysis"
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get("sortBy") || "createdAt"
     const sortOrder = searchParams.get("sortOrder") || "desc"
 
-    if (session?.user?.id) {
+    if (session?.userId) {
       // Fetch from MongoDB for authenticated users
       await connectDB()
 
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       let emails: unknown[] = []
 
       if (type === "document" || type === "all") {
-        const docQuery = DocumentAnalysis.find({ userId: session.user.id })
+        const docQuery = DocumentAnalysis.find({ userId: session.userId })
           .sort({ [sortBy]: sortOrder === "desc" ? -1 : 1 })
         
         if (search) {
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       }
 
       if (type === "email" || type === "all") {
-        const emailQuery = EmailAnalysis.find({ userId: session.user.id })
+        const emailQuery = EmailAnalysis.find({ userId: session.userId })
           .sort({ [sortBy]: sortOrder === "desc" ? -1 : 1 })
         
         if (search) {
@@ -122,19 +122,19 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    if (session?.user?.id) {
+    if (session?.userId) {
       // Delete from MongoDB for authenticated users
       await connectDB()
 
       if (type === "document") {
         await DocumentAnalysis.findOneAndDelete({
           _id: id,
-          userId: session.user.id,
+          userId: session.userId,
         })
       } else if (type === "email") {
         await EmailAnalysis.findOneAndDelete({
           _id: id,
-          userId: session.user.id,
+          userId: session.userId,
         })
       }
     } else {

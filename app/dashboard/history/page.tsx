@@ -9,10 +9,10 @@ import { Select } from "@/components/ui/select"
 import { Search, Trash2, Star, FileText, Mail, Clock, Filter } from "lucide-react"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
-import { useSession } from "@/hooks/use-session"
+import { useAuth } from "@clerk/nextjs"
 
 export default function HistoryPage() {
-  const { data: session } = useSession()
+  const { isSignedIn } = useAuth()
   const [history, setHistory] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
@@ -98,7 +98,7 @@ export default function HistoryPage() {
         <div>
           <h1 className="text-3xl font-bold">History</h1>
           <p className="text-muted-foreground">
-            {session?.user ? "View your saved analyses" : "Your local history (Guest Mode)"}
+            {isSignedIn ? "View your saved analyses" : "Your local history (Guest Mode)"}
           </p>
         </div>
 

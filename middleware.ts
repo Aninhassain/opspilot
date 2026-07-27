@@ -1,20 +1,21 @@
-import { NextResponse } from "next/server"
+import { clerkMiddleware } from "@clerk/nextjs/server"
 
-export function middleware(request: Request) {
-  const url = new URL(request.url)
-  const pathname = url.pathname
-
-  // Protect these routes - require authentication
-  const protectedRoutes = ["/dashboard/profile", "/dashboard/history", "/dashboard/favorites", "/dashboard/settings"]
-
-  if (protectedRoutes.some((route) => pathname.startsWith(route))) {
-    // For now, allow access - we'll handle auth in the pages themselves
-    // This avoids MongoDB loading in edge runtime
+export default clerkMiddleware((auth, req) => {
+  // Protect specific routes
+  if (req.nextUrl.pathname.startsWith('/dashboard/profile')) {
+    auth().protect()
   }
-
-  return NextResponse.next()
-}
+  if (req.nextUrl.pathname.startsWith('/dashboard/history')) {
+    auth().protect()
+  }
+  if (req.nextUrl.pathname.startsWith('/dashboard/favorites')) {
+    auth().protect()
+  }
+  if (req.nextUrl.pathname.startsWith('/dashboard/settings')) {
+    auth().protect()
+  }
+})
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
 }

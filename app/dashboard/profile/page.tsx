@@ -7,11 +7,10 @@ import { Badge } from "@/components/ui/badge"
 import { User, FileText, Mail, Star, Calendar, LogOut, Shield } from "lucide-react"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
-import { useSession } from "@/hooks/use-session"
-import { signIn, signOut } from "@/auth/lib/react"
+import { useAuth } from "@clerk/nextjs"
 
 export default function ProfilePage() {
-  const { data: session } = useSession()
+  const { userId, isSignedIn } = useAuth()
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
@@ -34,14 +33,6 @@ export default function ProfilePage() {
     }
   }
 
-  const handleLogin = () => {
-    signIn("google")
-  }
-
-  const handleLogout = () => {
-    signOut()
-  }
-
   if (loading) {
     return (
       <DashboardLayout>
@@ -52,7 +43,7 @@ export default function ProfilePage() {
     )
   }
 
-  const isGuest = !session?.user
+  const isGuest = !isSignedIn
 
   return (
     <DashboardLayout>
@@ -92,12 +83,12 @@ export default function ProfilePage() {
               </div>
 
               {isGuest ? (
-                <Button onClick={handleLogin} className="w-full">
+                <Button onClick={() => window.location.href = "/auth/login"} className="w-full">
                   <Shield className="h-4 w-4 mr-2" />
                   Sign in to Save Work
                 </Button>
               ) : (
-                <Button onClick={handleLogout} variant="outline" className="w-full">
+                <Button onClick={() => window.location.href = "/auth/login"} variant="outline" className="w-full">
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
                 </Button>
