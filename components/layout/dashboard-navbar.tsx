@@ -4,7 +4,6 @@ import { Bell, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { UserButton } from "@clerk/nextjs"
-import Link from "next/link"
 
 export function DashboardNavbar() {
   return (

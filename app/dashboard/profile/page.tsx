@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { User, FileText, Mail, Star, Calendar, LogOut, Shield } from "lucide-react"
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { toast } from "sonner"
 import { useAuth } from "@clerk/nextjs"
 
@@ -15,23 +16,33 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchProfile()
-  }, [])
+    let cancelled = false
 
-  const fetchProfile = async () => {
-    try {
-      const response = await fetch("/api/profile")
-      const data = await response.json()
+    async function loadProfile() {
+      try {
+        const response = await fetch("/api/profile")
+        const data = await response.json()
 
-      if (data.success) {
-        setProfile(data.data)
+        if (!cancelled && data.success) {
+          setProfile(data.data)
+        }
+      } catch {
+        if (!cancelled) {
+          toast.error("Failed to load profile")
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
-    } catch {
-      toast.error("Failed to load profile")
-    } finally {
-      setLoading(false)
     }
-  }
+
+    void loadProfile()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   if (loading) {
     return (
@@ -64,9 +75,12 @@ export default function ProfilePage() {
               <div className="flex flex-col items-center space-y-4">
                 <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center">
                   {profile?.user?.image ? (
-                    <img
+                    <Image
                       src={profile.user.image}
                       alt={profile.user.name}
+                      width={96}
+                      height={96}
+                      unoptimized
                       className="h-24 w-24 rounded-full object-cover"
                     />
                   ) : (

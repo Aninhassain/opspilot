@@ -6,44 +6,77 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Search, Trash2, Star, FileText, Mail, Clock } from "lucide-react"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { useAuth } from "@clerk/nextjs"
 
+type HistoryDocument = {
+  id?: string
+  _id?: string
+  fileName?: string
+  summary?: string
+  readingTime?: number
+  createdAt: string | Date
+}
+
+type HistoryEmail = {
+  id?: string
+  _id?: string
+  subject?: string
+  category?: string
+  priority?: string
+  createdAt: string | Date
+}
+
+type HistoryItem =
+  | (HistoryDocument & { itemType: "document" })
+  | (HistoryEmail & { itemType: "email" })
+
 export default function HistoryPage() {
   const { isSignedIn } = useAuth()
-  const [history, setHistory] = useState<{ documents: unknown[]; emails: unknown[] } | null>(null)
+  const [history, setHistory] = useState<{ documents: HistoryDocument[]; emails: HistoryEmail[] } | null>(null)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [typeFilter, setTypeFilter] = useState("all")
   const [sortBy, setSortBy] = useState("createdAt")
   const [sortOrder, setSortOrder] = useState("desc")
-
-  const fetchHistory = useCallback(async () => {
-    try {
-      const params = new URLSearchParams({
-        type: typeFilter,
-        search,
-        sortBy,
-        sortOrder,
-      })
-
-      const response = await fetch(`/api/history?${params}`)
-      const data = await response.json()
-
-      if (data.success) {
-        setHistory(data.data)
-      }
-    } catch {
-      toast.error("Failed to load history")
-    } finally {
-      setLoading(false)
-    }
-  }, [typeFilter, search, sortBy, sortOrder])
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
-    fetchHistory()
-  }, [fetchHistory])
+    let cancelled = false
+
+    async function loadHistory() {
+      try {
+        const params = new URLSearchParams({
+          type: typeFilter,
+          search,
+          sortBy,
+          sortOrder,
+        })
+
+        const response = await fetch(`/api/history?${params}`)
+        const data = await response.json()
+
+        if (!cancelled && data.success) {
+          setHistory(data.data)
+        }
+      } catch {
+        if (!cancelled) {
+          toast.error("Failed to load history")
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    void loadHistory()
+
+    return () => {
+      cancelled = true
+    }
+  }, [typeFilter, search, sortBy, sortOrder, refreshKey])
 
   const handleDelete = async (id: string, type: "document" | "email") => {
     try {
@@ -53,7 +86,7 @@ export default function HistoryPage() {
 
       if (response.ok) {
         toast.success("Deleted successfully")
-        fetchHistory()
+        setRefreshKey((key) => key + 1)
       }
     } catch {
       toast.error("Failed to delete")
@@ -86,9 +119,9 @@ export default function HistoryPage() {
     )
   }
 
-  const allItems = [
-    ...(history?.documents || []).map((doc: any) => ({ ...doc, itemType: "document" })),
-    ...(history?.emails || []).map((email: any) => ({ ...email, itemType: "email" })),
+  const allItems: HistoryItem[] = [
+    ...(history?.documents || []).map((doc) => ({ ...doc, itemType: "document" as const })),
+    ...(history?.emails || []).map((email) => ({ ...email, itemType: "email" as const })),
   ]
 
   return (
@@ -158,7 +191,7 @@ export default function HistoryPage() {
               </CardContent>
             </Card>
           ) : (
-            allItems.map((item: any) => (
+            allItems.map((item) => (
               <Card key={item.id || item._id} className="glass">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between gap-4">
