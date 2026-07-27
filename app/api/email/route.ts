@@ -52,9 +52,9 @@ ${validatedData.email}
       let user = await User.findById(session.userId)
       if (!user) {
         user = await User.create({
-          name: session.firstName || "User",
-          email: session.emailAddresses?.[0]?.emailAddress || "",
-          image: session.imageUrl || undefined,
+          name: "User",
+          email: "",
+          image: undefined,
           provider: "clerk",
         })
       }

@@ -4,7 +4,7 @@ export interface IUser {
   name: string
   email: string
   image?: string
-  provider: "google" | "github" | "credentials"
+  provider: "google" | "github" | "credentials" | "clerk"
   createdAt: Date
 }
 
@@ -26,7 +26,7 @@ const UserSchema = new Schema<IUser>(
     },
     provider: {
       type: String,
-      enum: ["google", "github", "credentials"],
+      enum: ["google", "github", "credentials", "clerk"],
       default: "credentials",
     },
     createdAt: {
