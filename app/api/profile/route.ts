@@ -7,7 +7,7 @@ import EmailAnalysis from "@/models/EmailAnalysis"
 import Favorite from "@/models/Favorite"
 import { guestStorage } from "@/lib/guest-storage"
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth()
 

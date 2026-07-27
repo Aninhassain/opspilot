@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Shield, Sparkles } from "lucide-react"
-import { signIn } from "@/auth/lib/react"
 
 interface GuestModalProps {
   open: boolean
@@ -13,7 +12,7 @@ interface GuestModalProps {
 
 export function GuestModal({ open, onOpenChange }: GuestModalProps) {
   const handleSignIn = () => {
-    signIn("google")
+    window.location.href = "/auth/login"
     onOpenChange(false)
   }
 
@@ -27,7 +26,7 @@ export function GuestModal({ open, onOpenChange }: GuestModalProps) {
         <DialogHeader>
           <DialogTitle className="text-2xl">Welcome to OpsPilot AI</DialogTitle>
           <DialogDescription className="text-base">
-            Choose how you'd like to experience the platform
+            Choose how you&apos;d like to experience the platform
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
@@ -54,7 +53,7 @@ export function GuestModal({ open, onOpenChange }: GuestModalProps) {
                   <Shield className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
-                  <CardTitle className="text-lg">Sign In with Google</CardTitle>
+                  <CardTitle className="text-lg">Sign In</CardTitle>
                   <CardDescription className="text-sm">
                     Save your work, access history from any device
                   </CardDescription>

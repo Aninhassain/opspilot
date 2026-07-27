@@ -10,8 +10,8 @@ import { toast } from "sonner"
 import { useAuth } from "@clerk/nextjs"
 
 export default function ProfilePage() {
-  const { userId, isSignedIn } = useAuth()
-  const [profile, setProfile] = useState<any>(null)
+  const { isSignedIn } = useAuth()
+  const [profile, setProfile] = useState<{ user: { name: string; email: string; image: string; provider: string } } | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function ProfilePage() {
       if (data.success) {
         setProfile(data.data)
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to load profile")
     } finally {
       setLoading(false)

@@ -10,7 +10,7 @@ const favoriteSchema = z.object({
   type: z.enum(["document", "email"]),
 })
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth()
 

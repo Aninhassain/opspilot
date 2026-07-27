@@ -106,7 +106,7 @@ export function resetGeminiService(): void {
 /**
  * Generate simulated response for demo purposes when API fails
  */
-export function generateSimulatedResponse(type: 'summarize' | 'email', input: string): any {
+export function generateSimulatedResponse(type: 'summarize' | 'email', input: string): Record<string, unknown> {
   if (type === 'summarize') {
     return {
       summary: "This document discusses key business operations and strategic initiatives. It outlines important priorities and actionable steps for implementation.",

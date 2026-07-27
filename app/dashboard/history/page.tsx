@@ -1,30 +1,25 @@
 "use client"
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Select } from "@/components/ui/select"
-import { Search, Trash2, Star, FileText, Mail, Clock, Filter } from "lucide-react"
-import { useState, useEffect } from "react"
+import { Search, Trash2, Star, FileText, Mail, Clock } from "lucide-react"
+import { useState, useEffect, useCallback } from "react"
 import { toast } from "sonner"
 import { useAuth } from "@clerk/nextjs"
 
 export default function HistoryPage() {
   const { isSignedIn } = useAuth()
-  const [history, setHistory] = useState<any>(null)
+  const [history, setHistory] = useState<{ documents: unknown[]; emails: unknown[] } | null>(null)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [typeFilter, setTypeFilter] = useState("all")
   const [sortBy, setSortBy] = useState("createdAt")
   const [sortOrder, setSortOrder] = useState("desc")
 
-  useEffect(() => {
-    fetchHistory()
-  }, [typeFilter, search, sortBy, sortOrder])
-
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     try {
       const params = new URLSearchParams({
         type: typeFilter,
@@ -39,12 +34,16 @@ export default function HistoryPage() {
       if (data.success) {
         setHistory(data.data)
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to load history")
     } finally {
       setLoading(false)
     }
-  }
+  }, [typeFilter, search, sortBy, sortOrder])
+
+  useEffect(() => {
+    fetchHistory()
+  }, [fetchHistory])
 
   const handleDelete = async (id: string, type: "document" | "email") => {
     try {
@@ -56,7 +55,7 @@ export default function HistoryPage() {
         toast.success("Deleted successfully")
         fetchHistory()
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete")
     }
   }
@@ -72,7 +71,7 @@ export default function HistoryPage() {
       if (response.ok) {
         toast.success("Added to favorites")
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to add to favorites")
     }
   }
