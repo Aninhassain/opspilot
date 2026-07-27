@@ -54,7 +54,6 @@ opspilot/
 - **UI Components**: shadcn/ui patterns
 - **State Management**: Zustand
 - **Authentication**: Clerk (Email/Password, OAuth)
-- **Database**: MongoDB Atlas with Mongoose
 - **Validation**: Zod
 - **Animations**: Framer Motion
 - **Charts**: Recharts
@@ -85,7 +84,6 @@ cp .env.example .env.local
 
 4. Add your environment variables to `.env.local`:
 ```env
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/opspilot?retryWrites=true&w=majority
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
 CLERK_SECRET_KEY=your_clerk_secret_key
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/auth/login
@@ -109,7 +107,6 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `MONGODB_URI` | MongoDB Atlas connection string | Yes (for authenticated mode) |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key for frontend | Yes (for authentication) |
 | `CLERK_SECRET_KEY` | Clerk secret key for backend | Yes (for authentication) |
 | `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Redirect URL for sign in | No (defaults to /auth/login) |
@@ -159,10 +156,8 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ### Authenticated Mode
 - **Clerk Authentication**: Sign in with email/password or OAuth providers
-- **MongoDB storage**: Persistent data storage in MongoDB Atlas
-- **Cross-device sync**: Access your data from any device
-- **Full features**: History, favorites, profile, settings
-- **Automatic user creation**: Users created automatically on first sign-in
+- **Account profile**: Identity and account details are provided by Clerk
+- **No server-side persistence**: Analyses, history, and favorites are not stored
 
 ### Protected Routes
 The following routes require authentication:
@@ -226,7 +221,6 @@ This project uses GitHub Actions for automatic deployment to Vercel.
 
 1. In your Vercel project, go to Settings → Environment Variables
 2. Add:
-   - `MONGODB_URI`: Your MongoDB Atlas connection string
    - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`: Your Clerk publishable key
    - `CLERK_SECRET_KEY`: Your Clerk secret key
    - `NEXT_PUBLIC_CLERK_SIGN_IN_URL`: `/auth/login`
@@ -285,7 +279,7 @@ Required GitHub Secrets:
 ## 📝 API Routes
 
 ### POST `/api/document`
-Summarizes text using Gemini AI and saves to MongoDB (authenticated) or localStorage (guest).
+Summarizes text using Gemini AI. Results are returned without server-side persistence.
 
 **Request:**
 ```json
@@ -314,7 +308,7 @@ Summarizes text using Gemini AI and saves to MongoDB (authenticated) or localSto
 ```
 
 ### POST `/api/email`
-Analyzes email content using Gemini AI and saves to MongoDB (authenticated) or localStorage (guest).
+Analyzes email content using Gemini AI. Results are returned without server-side persistence.
 
 **Request:**
 ```json

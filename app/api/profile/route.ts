@@ -1,72 +1,35 @@
 import { NextResponse } from "next/server"
-import { auth } from "@clerk/nextjs/server"
-import connectDB from "@/lib/mongodb"
-import User from "@/models/User"
-import DocumentAnalysis from "@/models/DocumentAnalysis"
-import EmailAnalysis from "@/models/EmailAnalysis"
-import Favorite from "@/models/Favorite"
-import { guestStorage } from "@/lib/guest-storage"
+import { currentUser } from "@clerk/nextjs/server"
 
 export async function GET() {
   try {
-    const session = await auth()
+    const user = await currentUser()
 
-    if (session?.userId) {
-      // Fetch from MongoDB for authenticated users
-      await connectDB()
-
-      const user = await User.findById(session.userId).lean()
-      const documentCount = await DocumentAnalysis.countDocuments({
-        userId: session.userId,
-      })
-      const emailCount = await EmailAnalysis.countDocuments({
-        userId: session.userId,
-      })
-      const favoriteCount = await Favorite.countDocuments({
-        userId: session.userId,
-      })
-
-      return NextResponse.json({
-        success: true,
-        data: {
-          user: {
-            name: user?.name,
-            email: user?.email,
-            image: user?.image,
-            provider: user?.provider,
-            createdAt: user?.createdAt,
-          },
-          stats: {
-            documentsProcessed: documentCount,
-            emailsAnalyzed: emailCount,
-            favorites: favoriteCount,
-          },
+    return NextResponse.json({
+      success: true,
+      data: {
+        user: user
+          ? {
+              name: user.fullName || user.username || "User",
+              email: user.primaryEmailAddress?.emailAddress ?? null,
+              image: user.imageUrl,
+              provider: "clerk",
+              createdAt: user.createdAt,
+            }
+          : {
+              name: "Guest User",
+              email: null,
+              image: null,
+              provider: "guest",
+              createdAt: null,
+            },
+        stats: {
+          documentsProcessed: 0,
+          emailsAnalyzed: 0,
+          favorites: 0,
         },
-      })
-    } else {
-      // Return guest stats from localStorage
-      const documents = guestStorage.getDocuments()
-      const emails = guestStorage.getEmails()
-      const favorites = guestStorage.getFavorites()
-
-      return NextResponse.json({
-        success: true,
-        data: {
-          user: {
-            name: "Guest User",
-            email: null,
-            image: null,
-            provider: "guest",
-            createdAt: null,
-          },
-          stats: {
-            documentsProcessed: documents.length,
-            emailsAnalyzed: emails.length,
-            favorites: favorites.length,
-          },
-        },
-      })
-    }
+      },
+    })
   } catch (error) {
     console.error("Profile API error:", error)
     return NextResponse.json(
